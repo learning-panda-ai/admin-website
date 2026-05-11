@@ -110,7 +110,7 @@ export default function DashboardPage() {
         <PageHeader
           title="File Management"
           description="Upload PDFs and track their ingestion into the vector database"
-          badge={`${files.length} file${files.length !== 1 ? "s" : ""}`}
+          badge={loadingFiles ? undefined : `${files.length} file${files.length !== 1 ? "s" : ""}`}
         />
 
         <div className="px-8 py-8 space-y-8">

@@ -12,7 +12,9 @@ export default function PageHeader({ title, description, badge }: PageHeaderProp
         <p className="text-slate-400 text-sm">{description}</p>
       </div>
       {badge !== undefined && (
-        <span className="text-slate-500 text-sm">{badge}</span>
+        <span className="bg-slate-800 border border-slate-700 text-slate-400 text-xs font-medium rounded-full px-3 py-1">
+          {badge}
+        </span>
       )}
     </header>
   );
