@@ -78,7 +78,7 @@ export default function FilesTable({ files, loading, token, onFileUpdate, onFile
     setPage(1);
   }
 
-  async function handleDeletePendingFile(file: UploadedFile) {
+  async function handleDeleteFile(file: UploadedFile) {
     const confirmed = window.confirm(
       `Delete "${file.filename}" from dashboard records? This only removes it from the database.`
     );
@@ -347,23 +347,21 @@ export default function FilesTable({ files, loading, token, onFileUpdate, onFile
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
                         <SyncButton file={file} token={token} onUpdate={onFileUpdate} />
-                        {file.ingest_status === "pending" && (
-                          <button
-                            title="Delete pending file"
-                            onClick={() => void handleDeletePendingFile(file)}
-                            disabled={deletingFileId === file.id}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"
-                              />
-                            </svg>
-                          </button>
-                        )}
+                        <button
+                          title="Delete file record"
+                          onClick={() => void handleDeleteFile(file)}
+                          disabled={deletingFileId === file.id}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"
+                            />
+                          </svg>
+                        </button>
                       </div>
                     </td>
                   </tr>
