@@ -84,6 +84,10 @@ export default function DashboardPage() {
     setFiles((prev) => prev.map((f) => (f.id === updated.id ? updated : f)));
   }
 
+  function handleFileDelete(fileId: string) {
+    setFiles((prev) => prev.filter((f) => f.id !== fileId));
+  }
+
   // ── Loading state ────────────────────────────────────────────────────────
   if (loadingAdmin) {
     return (
@@ -152,6 +156,7 @@ export default function DashboardPage() {
               loading={loadingFiles}
               token={token}
               onFileUpdate={handleFileUpdate}
+              onFileDelete={handleFileDelete}
             />
           </section>
         </div>

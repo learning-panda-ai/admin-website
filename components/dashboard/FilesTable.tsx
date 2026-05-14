@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { UploadedFile } from "@/types/dashboard";
+import { authHeaders } from "@/lib/auth";
 import { BOARDS, STANDARDS, SUBJECTS } from "@/lib/constants";
 import StatusBadge from "./StatusBadge";
 import SyncButton from "./SyncButton";
@@ -11,6 +12,7 @@ interface FilesTableProps {
   loading: boolean;
   token: string;
   onFileUpdate: (updated: UploadedFile) => void;
+  onFileDelete: (fileId: string) => void;
 }
 
 const TABLE_HEADERS = [
@@ -21,7 +23,7 @@ const TABLE_HEADERS = [
   "State",
   "Uploaded",
   "Status",
-  "Sync",
+  "Actions",
 ];
 
 const INGEST_STATUSES = ["all", "pending", "queued", "processing", "completed", "failed"];
@@ -46,7 +48,7 @@ function ChevronRight() {
   );
 }
 
-export default function FilesTable({ files, loading, token, onFileUpdate }: FilesTableProps) {
+export default function FilesTable({ files, loading, token, onFileUpdate, onFileDelete }: FilesTableProps) {
   const [search, setSearch] = useState("");
   const [filterBoard, setFilterBoard] = useState("all");
   const [filterStandard, setFilterStandard] = useState("all");
@@ -54,6 +56,7 @@ export default function FilesTable({ files, loading, token, onFileUpdate }: File
   const [filterStatus, setFilterStatus] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
 
   const hasActiveFilters =
     search !== "" ||
@@ -73,6 +76,32 @@ export default function FilesTable({ files, loading, token, onFileUpdate }: File
 
   function resetPage() {
     setPage(1);
+  }
+
+  async function handleDeletePendingFile(file: UploadedFile) {
+    const confirmed = window.confirm(
+      `Delete "${file.filename}" from dashboard records? This only removes it from the database.`
+    );
+    if (!confirmed) return;
+
+    setDeletingFileId(file.id);
+    try {
+      const res = await fetch(`/api/v1/files/${file.id}`, {
+        method: "DELETE",
+        headers: authHeaders(token),
+      });
+
+      if (res.ok) {
+        onFileDelete(file.id);
+        return;
+      }
+
+      const data = await res.json().catch(() => null);
+      const message = data?.detail ?? "Could not delete the file record.";
+      window.alert(message);
+    } finally {
+      setDeletingFileId((current) => (current === file.id ? null : current));
+    }
   }
 
   const filtered = useMemo(() => {
@@ -314,9 +343,28 @@ export default function FilesTable({ files, loading, token, onFileUpdate }: File
                       </div>
                     </td>
 
-                    {/* Sync */}
+                    {/* Actions */}
                     <td className="px-4 py-3">
-                      <SyncButton file={file} token={token} onUpdate={onFileUpdate} />
+                      <div className="flex items-center gap-1.5">
+                        <SyncButton file={file} token={token} onUpdate={onFileUpdate} />
+                        {file.ingest_status === "pending" && (
+                          <button
+                            title="Delete pending file"
+                            onClick={() => void handleDeletePendingFile(file)}
+                            disabled={deletingFileId === file.id}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
